@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Copyright 2013, 2017, Karljohan Lundin Palmerius
+
+This is a stubb for laborations on multi-modal display
+systems in the VR laboratory. It will disable the X3D
+navigation to allow for viewpoint calibration and tracking,
+and load libraries commonly used in the VR laboratory.
+
+-->
+
+<Scene>
+<Transform DEF="sceneTransform">  
+  <PythonScript url="urn:candy:python/CorrectViewpoint.py"/>
+  <PythonScript url="urn:candy:python/AutoLoadSO.py"/>
+
+<!-- Depth Perception  -->
+  <!-- <Inline url="urn:candy:x3d/view-untracked-stereo.x3d"/>
+  <Inline url="urn:candy:x3d/view-untracked-mono.x3d"/>
+  <Inline url="urn:candy:x3d/view-head-tracked-stereo.x3d"/>
+  <Inline url="urn:candy:x3d/view-head-tracked-mono.x3d"/> -->
+
+
+<!-- Set Viewpoint -->
+  <!-- <Viewpoint centerOfRotation='0 0 0'
+        position='0 0 0.6'
+        orientation='1 0 0 0.2' /> -->
+  
+  <!-- <SMViewpoint position="0 0 1" screenLowerLeft="-0.35 -0.16 0" screenUpperRight="0.35 0.16 0"/> -->
+
+  <!-- <Viewpoint DEF='B'
+        description='View B'
+        centerOfRotation='0 0 0'
+        position='1.5 0 0.2'
+        orientation='0 1 0 1.5'/> -->
+
+<!-- Set Objects -->
+  <Group DEF="house">
+  <MatrixTransform DEF="TR">
+    <Transform translation = "-0.15 0 -0.5">
+      <Shape>
+        <Appearance>
+          <Material diffuseColor = '0.8 0.8 0.8'/>
+        </Appearance>
+        <Box size= "0.2 0.1 0.2" />
+      </Shape>
+    </Transform>
+    <Transform  translation = "-0.15 0.07 -0.5">
+      <Shape>
+        <Cone  bottomRadius="0.2" height="0.05"/>
+        <Appearance>
+          <Material  diffuseColor = '0.8 0.8 0.8'/>
+        </Appearance>
+      </Shape>
+    </Transform>
+  </MatrixTransform>
+  </Group>
+
+
+  <Group DEF="chair">
+    <Transform translation="0.1 0.1 0">
+      <Shape DEF="backchair">
+        <Appearance>
+            <Material DEF= "boxcolor" diffuseColor = '0.4 0.2 0'/>
+            <SmoothSurface/>
+        </Appearance>
+        <Box DEF="box" size="0.1 0.01 0.1"/>
+      </Shape>
+    </Transform>
+    <Transform translation = "0.15 0.05 0.05">
+      <Shape DEF="legchair">
+        <Appearance>
+            <Material diffuseColor = '0.4 0.2 0'/>
+        </Appearance>
+        <Cylinder  radius="0.005" height="0.1"/>
+      </Shape>
+    </Transform>
+    <Transform translation = "0.05 0.05 0.05">
+      <Shape USE="legchair"/>
+    </Transform>
+    <Transform translation = "0.05 0.05 -0.05">
+      <Shape USE="legchair"/>
+    </Transform>
+    <Transform translation = "0.15 0.05 -0.05">
+      <Shape USE="legchair"/>
+    </Transform>
+    <Transform rotation="0 0 1 1.5708" translation="0.05 0.15 0">
+      <Shape USE="backchair"/>
+    </Transform>
+  </Group>
+
+  <Group DEF="sun">
+    <Transform DEF="Xform" translation = "0.25 0.2 0">
+      <Shape>
+        <Sphere DEF="sphere0" radius="0.02"/>
+        <Appearance>
+          <Material DEF="sphereColor" diffuseColor = "1 1 0"/>
+          <SmoothSurface/>
+        </Appearance>
+      </Shape>
+    </Transform>
+
+  </Group>
+
+  <Group DEF="Wall">
+    <Transform translation="0 0 -2">
+      <Shape>
+        <Box size="4 2 0.01"/>
+        <Appearance>
+          <ImageTexture url='../Texture.jpg' />
+        </Appearance>
+      </Shape>
+    </Transform>
+  </Group>
+
+<!-- Dynamic Behaviour : Change color when the object is touched (sphere) -->
+  <PythonScript DEF="ColorRandomizer" url="ColorRandomizer.py"/>
+  <PythonScript DEF="MFtoSFBool" url="urn:candy:python/MFtoSFBool.py"/>
+
+  <ROUTE fromNode="sphere0" fromField="isTouched" toNode="MFtoSFBool" toField="value" />
+  <ROUTE fromNode="MFtoSFBool" fromField="value" toNode="ColorRandomizer" toField="color"/>
+  <ROUTE fromNode="ColorRandomizer" fromField="color" toNode="sphereColor" toField="diffuseColor" />
+
+<!-- Set Navigation: ManualTransform for objects (house) -->
+  <IMPORT inlineDEF="H3D_EXPORTS" exportedDEF="HDEV" AS="HDEV"/>
+  
+  <PythonScript
+      DEF="MT"
+      url="urn:candy:python/ManualTranslation.py">
+    <Transform USE="TR" containerField="references"/>
+  </PythonScript>
+  
+  <PythonScript
+      DEF="MZ"
+      url="urn:candy:python/ManualZoom.py">
+    <Transform USE="TR" containerField="references"/>
+  </PythonScript>
+  
+  <PythonScript
+      DEF="MR"
+      url="urn:candy:python/ManualRotation.py">
+    <Transform USE="TR" containerField="references"/>
+  </PythonScript>
+  
+  <ROUTE fromNode="HDEV" fromField="mainButton"
+         toNode="MT" toField="button"/>
+  <ROUTE fromNode="HDEV" fromField="trackerPosition"
+         toNode="MT" toField="position"/>
+  
+  <ROUTE fromNode="HDEV" fromField="mainButton"
+         toNode="MZ" toField="button"/>
+  <ROUTE fromNode="HDEV" fromField="trackerPosition"
+         toNode="MZ" toField="position"/>
+  <ROUTE fromNode="HDEV" fromField="trackerOrientation"
+         toNode="MZ" toField="orientation"/>
+  
+  <ROUTE fromNode="HDEV" fromField="mainButton"
+         toNode="MR" toField="button"/>
+  <ROUTE fromNode="HDEV" fromField="trackerPosition"
+         toNode="MR" toField="position"/>
+  <ROUTE fromNode="HDEV" fromField="trackerOrientation"
+         toNode="MR" toField="orientation"/>
+
+
+<!-- Rotate the scene -->
+  <PythonScript
+    DEF="ROTATOR"
+    url="urn:candy:python/Rotator.py">
+  <MetadataFloat name="eulerAxis" value="1 0 0" containerField="references"/>
+  <MetadataFloat name="eulerLimits" value="-1 1" containerField="references"/>
+  <MetadataFloat name="eulerAxis" value="0 1 0" containerField="references"/>
+  </PythonScript>
+  <ROUTE fromNode="ROTATOR" fromField="rotation"
+        toNode="sceneTransform" toField="rotation"/>
+
+</Transform>
+
+<!-- sound H3D for the sphere (sun)-->
+  <TimeTrigger DEF="T"/>
+  <BooleanFilter DEF="BF"/>
+  <PythonScript DEF="MFtoSFBool1" url="urn:candy:python/MFtoSFBool.py"/>
+
+  <VRSound spatialize="TRUE" intensity="1" direction="1 0 0" location="1 0 0" >
+    <AudioClip DEF="AUDIO" url="../COMCell.wav" loop="FALSE" />
+  </VRSound>
+
+  <ROUTE fromNode="sphere0" fromField="isTouched" toNode="MFtoSFBool1" toField="value"/>
+  <ROUTE fromNode="MFtoSFBool1" fromField="value" toNode="BF" toField="set_boolean"/>
+  <ROUTE fromNode="BF" fromField="inputTrue" toNode="T" toField="set_boolean"/>
+  <ROUTE fromNode="T" fromField="triggerTime" toNode="AUDIO" toField="startTime"/>
+
+<!-- sound H3D for the box (chair)-->
+  <TimeTrigger DEF="T2"/>
+  <BooleanFilter DEF="BF2"/>
+  <PythonScript DEF="MFtoSFBool2" url="urn:candy:python/MFtoSFBool.py"/> 
+  <VRSound spatialize="TRUE" intensity="1" direction="1 0 0" location="1 0 0">
+    <ReverbSoundEffect parametersPreset="CAVE"/>
+    <EchoSoundEffect/>
+    <AudioClip DEF="AUDIO1" url="../BELLDoor.wav" loop="FALSE" />
+  </VRSound>
+  <ROUTE fromNode="box" fromField="isTouched" toNode="MFtoSFBool2" toField="value"/>
+  <ROUTE fromNode="MFtoSFBool2" fromField="value" toNode="BF2" toField="set_boolean"/>
+  <ROUTE fromNode="BF2" fromField="inputTrue" toNode="T2" toField="set_boolean"/>
+  <ROUTE fromNode="T2" fromField="triggerTime" toNode="AUDIO1" toField="startTime"/>
+
+</Scene>

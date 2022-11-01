@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2013, 2017, Karljohan Lundin Palmerius
+This is a stubb for laborations on multi-modal display
+systems in the VR laboratory. It will disable the X3D
+navigation to allow for viewpoint calibration and tracking,
+and load libraries commonly used in the VR laboratory.
+-->
+<Group DEF="CHAIR">
+
+  <!-- <Inline url="urn:candy:x3d/view-untracked-stereo.x3d"/>
+  <Inline url="urn:candy:x3d/view-untracked-mono.x3d"/>
+  <Inline url="urn:candy:x3d/view-head-tracked-stereo.x3d"/>
+  <Inline url="urn:candy:x3d/view-head-tracked-mono.x3d"/> -->
+
+
+  <PythonScript url="urn:candy:python/CorrectViewpoint.py"/>
+
+  <PythonScript url="urn:candy:python/AutoLoadSO.py"/>
+  <PythonScript url="./ColorRandomizer.py"/>
+
+  <!-- dynamic.x3d -->
+
+
+  <!-- Put your code here -->
+  <!-- H��ger Upp��t Bak��t, negativ höger ger vänster-->
+  <SMViewpoint position="0 0 0.6" >
+  </SMViewpoint>
+
+  <TimeTrigger DEF='TT' />
+  <BooleanFilter DEF='BF' />
+
+  <VRSound intensity="1.0" DEF="SOUND" spatialize="TRUE" >
+    <AudioClip DEF="AUDIO" url="sound.wav" loop="FALSE"/>
+  </VRSound> 
+
+  <VRSound intensity="0.3" location="1 0 0" DEF="SOUND" spatialize="TRUE" >
+    <ReverbSoundEffect DEF="eff" parametersPreset="CHAPEL"/>
+    <AudioClip DEF="AUDIO" url="sound.wav" loop="FALSE"/>
+  </VRSound>
+
+
+<Transform DEF="TR" translation="0 -0.05 0">
+  <PointLight ambientIntensity='1.0' location='0 2 0.5 '></PointLight>
+<!-- <DirectionalLight ambientIntensity='0' color='1 1 1' direction='0 0 -1' global='false' intensity='1.0'  on='TRUE' shadowCascades='1' shadowFilterSize='0' shadowIntensity='0' shadowMapSize='1024' shadowOffset='0' shadowSplitFactor='1' shadowSplitOffset='0.1' zFar='-1' zNear='-1' ></DirectionalLight> -->
+    <Transform translation="0 0.005 0">
+        <Shape>
+        <Box DEF="FLOOR" size="1 0.01 1"/>
+        <Appearance shadow="TRUE">
+            <!-- <Material diffuseColor="1 1 0"  shadow="TRUE"/>
+            <Material texture='./tex.png' /> -->
+            <SmoothSurface DEF="SS" stiffness="0.4"/>
+            <PixelTexture image='2 2 1 0xcc 0x00 0x00 0xcc'/>
+            <TextureTransform scale='14 14'/>
+            <!-- <ImageTexture url="tex.png"><ImageTexture/> -->
+
+            <!-- <Material diffuseColor="1.0 0.0 0.0" DEF="SURFACE"/> -->
+            <!-- <SmoothSurface diffuseColor="1 0 0" DEF="SURFACE"/> -->
+        </Appearance>
+
+        </Shape>
+    </Transform>
+
+    <Transform translation="0 0.1 0">
+        <Shape>
+        <Box DEF="CHAIR_BOTTOM" size="0.1 0.01 0.1"/>
+        <Appearance shadow="TRUE">
+            <Material DEF="MyMaterial" diffuseColor="1 0 0" shadow="TRUE"/>
+			<FrictionalSurface useRelativeValues = "false" stiffness = "1200" staticFriction ="0.7" dynamicFriction = "0.5"/>
+			
+            <!-- <Material diffuseColor="1.0 0.0 0.0" DEF="SURFACE"/> -->
+            <!-- <SmoothSurface diffuseColor="1 0 0" DEF="SURFACE"/> -->
+        </Appearance>
+        </Shape>
+    </Transform>
+
+    <!--Leg 1 -->
+    <Transform translation="0.05 0.05 0.05">
+        <Shape DEF='LEG'>
+        <Cylinder  radius="0.005" height="0.1"/>
+        <Appearance shadow="TRUE">
+            <Material diffuseColor="1.0 0.0 0.0"/>
+        </Appearance>
+        </Shape>
+    </Transform>
+
+    <!--Leg 2 -->
+    <Transform translation="-0.05 0.05 0.05">
+        <Shape USE='LEG'>
+        </Shape>
+    </Transform>
+
+    <!--Leg 3 -->
+    <Transform translation="0.05 0.05 -0.05">
+        <Shape USE='LEG'>
+        </Shape>
+    </Transform>
+
+    <!--Leg 4 -->
+    <Transform translation="-0.05 0.05 -0.05">
+        <Shape USE='LEG'>
+        </Shape>
+    </Transform>
+
+    <Transform translation="0.00 0.13 0.00">
+      <Shape>
+        <Sphere  radius="0.005" />
+        <Appearance shadow="TRUE">
+            <Material diffuseColor="1.0 0.0 0.0"/>
+        </Appearance>
+      </Shape>
+    </Transform>
+
+  </Transform>  
+  <PythonScript
+    DEF="ROTATOR"
+    url="urn:candy:python/Rotator.py">
+  <MetadataFloat name="eulerAxis" value="1 0 0"
+                 containerField="references"/>
+  <MetadataFloat name="eulerLimits" value="-1 1"
+                 containerField="references"/>
+  <MetadataFloat name="eulerAxis" value="0 1 0"
+                 containerField="references"/>
+  </PythonScript>
+  <ROUTE fromNode="ROTATOR" fromField="rotation"
+        toNode="TR" toField="rotation"/>
+
+  <!-- <SpaceWareSensor DEF="MOUSE"/> -->
+
+  <!-- <Route fromNode="CHAIR_BOTTOM" fromField="isTouched"
+toNode="SURFACE" toField="diffuseColor"/> -->
+
+  <PythonScript DEF="PS" url="ColorRandomizer.py" />
+
+  <PythonScript url="urn:candy:python/MFtoSFBool.py" DEF="MFtoSFBool" />
+  <!-- <PythonScript url="urn:candy:python/MFtoSFBool.py" DEF="MFtoSFBool2" /> -->
+
+  <ROUTE fromNode="CHAIR_BOTTOM" fromField="isTouched"
+         toNode="MFtoSFBool" toField="value" />
+
+  <ROUTE fromNode="MFtoSFBool" fromField="value"
+         toNode="PS" toField="color" />
+
+  <ROUTE fromNode="PS" fromField="color"
+         toNode="MyMaterial" toField="diffuseColor" />
+
+  <ROUTE fromNode='CHAIR_BOTTOM' fromField='isTouched' toNode='MFtoSFBool2' toField='value' />
+  <ROUTE fromNode='MFtoSFBool2' fromField='value' toNode='BF' toField='set_boolean' />
+  <ROUTE fromNode='BF' fromField='inputTrue' toNode='TT' toField='set_boolean' />
+  <ROUTE fromNode='TT' fromField='triggerTime' toNode='AUDIO' toField='startTime' />
+
+</Group>
